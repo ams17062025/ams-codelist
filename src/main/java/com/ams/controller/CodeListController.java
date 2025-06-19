@@ -1,12 +1,12 @@
 package com.ams.controller;
 
 import com.ams.beans.CodeListBean;
+import com.ams.beans.CodeListRequest;
+import com.ams.beans.CodeListResponse;
 import com.ams.service.impl.CodeListService;
 import com.ams.service.impl.CodeListServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,7 +18,17 @@ public class CodeListController {
     private CodeListServiceImpl service;
 
     @GetMapping("/list")
-    public List<CodeListBean> list() {
-        return service.list();
+    public CodeListResponse list() {
+        CodeListResponse response = new CodeListResponse();
+        response.setCodeListBeanList(service.list());
+        response.setStatus("SUCCESS");
+        return response;
     }
+
+    @PostMapping("/add")
+    private CodeListResponse add(@RequestBody CodeListRequest request) {
+        return service.add(request);
+    }
+
+
 }
