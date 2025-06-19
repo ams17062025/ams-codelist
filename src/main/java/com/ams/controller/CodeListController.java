@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController("CodeListController")
 @RequestMapping("/codelist")
+@CrossOrigin(origins = "http://localhost:3000")
 public class CodeListController {
 
     @Autowired
@@ -19,6 +20,7 @@ public class CodeListController {
 
     @GetMapping("/list")
     public CodeListResponse list() {
+        System.out.println("Calling the list API");
         CodeListResponse response = new CodeListResponse();
         response.setCodeListBeanList(service.list());
         response.setStatus("SUCCESS");
