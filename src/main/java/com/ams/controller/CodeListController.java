@@ -1,14 +1,10 @@
 package com.ams.controller;
 
-import com.ams.beans.CodeListBean;
 import com.ams.beans.CodeListRequest;
 import com.ams.beans.CodeListResponse;
-import com.ams.service.impl.CodeListService;
 import com.ams.service.impl.CodeListServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController("CodeListController")
 @RequestMapping("/codelist")
@@ -32,5 +28,23 @@ public class CodeListController {
         return service.add(request);
     }
 
+    @PutMapping("/update")
+    private CodeListResponse update(@RequestBody CodeListRequest request) {
+        return service.update(request);
+    }
 
+    @DeleteMapping("/delete/{recordId}")
+    private CodeListResponse delete(@PathVariable Long recordId) {
+        return service.delete(recordId);
+    }
+
+    @PostMapping("/code/add")
+    private CodeListResponse addCode(@RequestBody CodeListRequest request) {
+        return service.addCode(request);
+    }
+
+    @PostMapping("/code/remove")
+    private CodeListResponse removeCode(@RequestBody CodeListRequest request) {
+        return service.removeCode(request);
+    }
 }
