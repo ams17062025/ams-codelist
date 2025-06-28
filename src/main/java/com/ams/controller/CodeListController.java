@@ -1,7 +1,7 @@
 package com.ams.controller;
 
-import com.ams.beans.CodeListRequest;
-import com.ams.beans.CodeListResponse;
+import com.ams.pojo.request.CodeListRequest;
+import com.ams.pojo.response.CodeListResponse;
 import com.ams.service.impl.CodeListServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +16,6 @@ public class CodeListController {
 
     @GetMapping("/list")
     public CodeListResponse list() {
-        System.out.println("Calling the list API");
         CodeListResponse response = new CodeListResponse();
         response.setCodeListBeanList(service.list());
         response.setStatus("SUCCESS");
@@ -38,13 +37,8 @@ public class CodeListController {
         return service.delete(recordId);
     }
 
-    @PostMapping("/code/add")
-    private CodeListResponse addCode(@RequestBody CodeListRequest request) {
-        return service.addCode(request);
-    }
-
-    @PostMapping("/code/remove")
-    private CodeListResponse removeCode(@RequestBody CodeListRequest request) {
-        return service.removeCode(request);
+    @GetMapping("/code/find/{codeListId}")
+    private CodeListResponse addCode(@PathVariable Long codeListId) {
+        return service.find(codeListId);
     }
 }

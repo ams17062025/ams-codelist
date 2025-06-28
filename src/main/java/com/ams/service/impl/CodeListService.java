@@ -1,8 +1,8 @@
 package com.ams.service.impl;
 
-import com.ams.beans.CodeListBean;
-import com.ams.beans.CodeListRequest;
-import com.ams.beans.CodeListResponse;
+import com.ams.pojo.beans.CodeListBean;
+import com.ams.pojo.request.CodeListRequest;
+import com.ams.pojo.response.CodeListResponse;
 
 import java.util.List;
 
@@ -14,7 +14,6 @@ public interface CodeListService {
 
     CodeListResponse delete(Long recordId);
 
-    CodeListResponse addCode(CodeListRequest request);
+    CodeListResponse find(Long recordId);
 
-    CodeListResponse removeCode(CodeListRequest request);
 }

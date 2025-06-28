@@ -1,22 +1,25 @@
 package com.ams.service.impl;
 
 import ch.qos.logback.core.util.StringUtil;
-import com.ams.beans.*;
-import com.ams.beans.Error;
+import com.ams.aspect.LogExecutionTime;
+import com.ams.pojo.beans.CodeListBean;
+import com.ams.pojo.beans.CodeListCodeBean;
+import com.ams.pojo.request.CodeListRequest;
+import com.ams.pojo.response.CodeListResponse;
+import com.ams.pojo.response.Error;
 import com.ams.dao.entity.CodeList;
 import com.ams.dao.entity.CodeListCode;
 import com.ams.dao.repo.CodeListRepo;
+import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CodeListServiceImpl implements CodeListService {
@@ -25,11 +28,12 @@ public class CodeListServiceImpl implements CodeListService {
     private CodeListRepo repo;
 
     @Override
+    @LogExecutionTime
     public List<CodeListBean> list() {
         List<CodeList> codeLists = repo.findAll();
         List<CodeListBean> list = new ArrayList<>();
         codeLists.forEach(code -> {
-            CodeListBean bean = new CodeListBean();
+            CodeListBean bean = CodeListBean.builder().build();
             bean.setRecordId(code.getRecordId());
             bean.setName(code.getName());
             bean.setDescription(code.getDescription());
@@ -120,6 +124,42 @@ public class CodeListServiceImpl implements CodeListService {
     }
 
     @Override
+    @Transactional
+    @LogExecutionTime
+    public CodeListResponse find(Long recordId) {
+        CodeListResponse response = new CodeListResponse();
+        Optional<CodeList> codeListObj = repo.findById(recordId);
+        if(codeListObj.isPresent()) {
+            CodeList codeList = codeListObj.get();
+            List<CodeListCodeBean> childs = new ArrayList<>();
+            codeList.getCodeListCode().forEach(codeListCode -> {
+                CodeListCodeBean codeListCodeBean = CodeListCodeBean.builder()
+                        .recordId(codeListCode.getRecordId())
+                        .code(codeListCode.getCode())
+                        .codeValue(codeListCode.getCodeValue())
+                        .codeDescription(codeListCode.getCodeDescription())
+                        .build();
+                childs.add(codeListCodeBean);
+            });
+
+            CodeListBean codeListBean = CodeListBean.builder()
+                    .recordId(codeList.getRecordId())
+                    .name(codeList.getName())
+                    .description(codeList.getDescription())
+                    .codeListCodeBeans(childs)
+                    .build();
+            response.setCodeListBean(codeListBean);
+            response.setStatus("SUCCESS");
+        } else {
+            response.setStatus("FAILED");
+            Error error = new Error("AMS-CL-1004", "Code list not found for update.");
+            response.setError(error);
+            return response;
+        }
+        return response;
+    }
+
+    //@Override
     public CodeListResponse addCode(CodeListRequest request) {
         CodeListResponse response = new CodeListResponse();
         Optional<CodeList> codeList = repo.findById(request.getCodeListBean().getRecordId());
@@ -146,7 +186,7 @@ public class CodeListServiceImpl implements CodeListService {
         return response;
     }
 
-    @Override
+    //@Override
     public CodeListResponse removeCode(CodeListRequest request) {
         CodeListResponse response = new CodeListResponse();
         Optional<CodeList> codeList = repo.findById(request.getCodeListBean().getRecordId());
