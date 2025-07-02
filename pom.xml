@@ -32,6 +32,11 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+			<version>2.7.0</version>
+		</dependency>
+		<dependency>
 			<groupId>com.ams.pojo</groupId>
 			<artifactId>ams-pojo</artifactId>
 			<version>1.0.0.0</version>
@@ -45,12 +50,6 @@
 			<scope>system</scope>
 			<systemPath>${project.artifacts.dir}/ams-commons/ams-commons-1.0.0.0.jar</systemPath>
 		</dependency>
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.0.2</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
