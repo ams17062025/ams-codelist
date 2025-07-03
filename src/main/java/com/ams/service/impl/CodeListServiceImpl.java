@@ -42,6 +42,7 @@ public class CodeListServiceImpl implements CodeListService {
         return list;
     }
 
+    @Transactional
     public CodeListResponse add(CodeListRequest request) {
         CodeListResponse response = new CodeListResponse();
         if(Objects.nonNull(request.getCodeListBean())) {
