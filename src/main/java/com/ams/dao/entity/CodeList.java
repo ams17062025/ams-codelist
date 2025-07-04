@@ -5,8 +5,11 @@ import lombok.Data;
 
 import java.util.List;
 
-@Entity(name = "CODE_LIST")
+@Entity
+@Table(name = "AMS_CODE_LIST")
 @Data
+@NamedQuery(name="CodeList.findByCodeListName",
+        query = "select e from CodeList e where e.name = :name")
 public class CodeList extends BaseEntity {
 
     @Id

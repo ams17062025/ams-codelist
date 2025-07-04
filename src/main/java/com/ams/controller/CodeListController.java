@@ -41,4 +41,19 @@ public class CodeListController {
     private CodeListResponse addCode(@PathVariable Long codeListId) {
         return service.find(codeListId);
     }
+
+    @PostMapping("/codes")
+    private CodeListResponse findCodes(@RequestBody CodeListRequest request) {
+        return service.findCodesByName(request);
+    }
+
+    @PostMapping("/code/add")
+    private CodeListResponse addCodeListCode(@RequestBody CodeListRequest request) {
+        return service.addCodeListCode(request);
+    }
+
+    @PostMapping("/code/delete")
+    private CodeListResponse deleteCodeListCode(@RequestBody CodeListRequest request) {
+        return service.deleteCodeListCode(request);
+    }
 }

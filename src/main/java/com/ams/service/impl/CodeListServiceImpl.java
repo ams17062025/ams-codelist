@@ -10,8 +10,11 @@ import com.ams.pojo.response.Error;
 import com.ams.dao.entity.CodeList;
 import com.ams.dao.entity.CodeListCode;
 import com.ams.dao.repo.CodeListRepo;
+import com.ams.pojo.utils.ResponseStatus;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -23,6 +26,8 @@ import java.util.Optional;
 
 @Service
 public class CodeListServiceImpl implements CodeListService {
+
+    Logger logger = LoggerFactory.getLogger(CodeListServiceImpl.class);
 
     @Autowired
     private CodeListRepo repo;
@@ -53,6 +58,13 @@ public class CodeListServiceImpl implements CodeListService {
                 return response;
             }
             try {
+                Optional<CodeList> existing = repo.findByCodeListName(request.getCodeListBean().getName().trim());
+                if(existing.isPresent()) {
+                    response.setStatus("FAILED");
+                    Error error = new Error("AMS-CL-1004", "Codelist already exists.");
+                    response.setError(error);
+                    return response;
+                }
                 CodeList codeList = new CodeList();
                 codeList.setName(request.getCodeListBean().getName());
                 codeList.setDescription(request.getCodeListBean().getDescription());
@@ -156,6 +168,109 @@ public class CodeListServiceImpl implements CodeListService {
             Error error = new Error("AMS-CL-1004", "Code list not found for update.");
             response.setError(error);
             return response;
+        }
+        return response;
+    }
+
+    @Override
+    @LogExecutionTime
+    public CodeListResponse findCodesByName(CodeListRequest request) {
+        CodeListResponse response = new CodeListResponse();
+        if(Objects.isNull(request) || Objects.isNull(request.getCodeListBean())) {
+            logger.warn("Request should not be empty");
+            response.setError(new Error("AMS-CL-1004", "Request should not be empty"));
+        } else if(Objects.isNull(request.getCodeListBean().getName())) {
+            logger.warn("Name should not be empty");
+            response.setError(new Error("AMS-CL-1006", "Name should not be empty"));
+        } else {
+            Optional<CodeList> codeListObjs = repo.findByCodeListName(request.getCodeListBean().getName());
+            if(codeListObjs.isPresent()) {
+                CodeList codeList = codeListObjs.get();
+                List<CodeListCodeBean> childs = new ArrayList<>();
+                if(!CollectionUtils.isEmpty(codeList.getCodeListCode())) {
+                    codeList.getCodeListCode().forEach(e -> {
+                        CodeListCodeBean codeBean = CodeListCodeBean.builder()
+                                .code(e.getCode())
+                                .codeValue(e.getCodeValue())
+                                .codeDescription(e.getCodeDescription())
+                                .build();
+                        childs.add(codeBean);
+                    });
+                }
+                CodeListBean codeListBean = CodeListBean.builder()
+                        .name(codeList.getName())
+                        .description(codeList.getDescription())
+                        .codeListCodeBeans(childs)
+                        .build();
+                response.setCodeListBean(codeListBean);
+                response.setStatus(ResponseStatus.SUCCESS.toString());
+            } else {
+                logger.warn("Codelist not found for "+request.getCodeListBean().getName());
+                response.setError(new Error("AMS-CL-1005", "Codelist not found"));
+            }
+        }
+        return response;
+    }
+
+    @Override
+    @LogExecutionTime
+    @Transactional
+    public CodeListResponse addCodeListCode(CodeListRequest request) {
+        CodeListResponse response = new CodeListResponse();
+        Optional<CodeList> codeListObj = repo.findById(request.getCodeListBean().getRecordId());
+        if(codeListObj.isPresent()) {
+            CodeList codeList = codeListObj.get();
+            List<CodeListCode> existingChilds = codeList.getCodeListCode();
+            List<String> existingCodes = existingChilds.stream().map(CodeListCode::getCode).toList();
+            if(!CollectionUtils.isEmpty(request.getCodeListBean().getCodeListCodeBeans())) {
+                request.getCodeListBean().getCodeListCodeBeans().forEach(e -> {
+                    if(!existingCodes.contains(e.getCode().trim())) {
+                        CodeListCode child = new CodeListCode();
+                        child.setCode(e.getCode());
+                        child.setCodeValue(e.getCodeValue());
+                        child.setCodeDescription(e.getCodeDescription());
+                        child.setCodeList(codeList);
+                        codeList.getCodeListCode().add(child);
+                    }
+                });
+                try {
+                    repo.save(codeList);
+                    response.setStatus(ResponseStatus.SUCCESS.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                logger.warn("Codelist not found for "+request.getCodeListBean().getRecordId());
+                response.setError(new Error("AMS-CL-1005", "Codelist not found"));
+            }
+        }
+        return response;
+    }
+
+    @Override
+    @LogExecutionTime
+    @Transactional
+    public CodeListResponse deleteCodeListCode(CodeListRequest request) {
+        CodeListResponse response = new CodeListResponse();
+        Optional<CodeList> codeListObj = repo.findById(request.getCodeListBean().getRecordId());
+        if(codeListObj.isPresent()) {
+            CodeList codeList = codeListObj.get();
+            List<String> deleteCode = new ArrayList<>();
+            if(Objects.nonNull(request.getCodeListBean())
+                    && !CollectionUtils.isEmpty(request.getCodeListBean().getCodeListCodeBeans())) {
+                request.getCodeListBean().getCodeListCodeBeans().forEach(e -> {
+                    deleteCode.add(e.getCode().trim());
+                });
+            }
+            List<CodeListCode> deleteChilds = codeList.getCodeListCode()
+                    .stream().filter(e-> deleteCode.contains(e.getCode())).toList();
+            try {
+                codeList.getCodeListCode().removeAll(deleteChilds);
+                repo.save(codeList);
+                response.setStatus(ResponseStatus.SUCCESS.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return response;
     }

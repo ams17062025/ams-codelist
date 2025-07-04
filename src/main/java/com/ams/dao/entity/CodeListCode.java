@@ -3,8 +3,9 @@ package com.ams.dao.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-@Entity(name="CODE_LIST_CODE")
+@Entity
 @Data
+@Table(name="AMS_CODE_LIST_CODE")
 public class CodeListCode extends BaseEntity {
 
     @Id

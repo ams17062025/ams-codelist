@@ -16,4 +16,9 @@ public interface CodeListService {
 
     CodeListResponse find(Long recordId);
 
+    CodeListResponse findCodesByName(CodeListRequest request);
+
+    CodeListResponse addCodeListCode(CodeListRequest request);
+
+    CodeListResponse deleteCodeListCode(CodeListRequest request);
 }
