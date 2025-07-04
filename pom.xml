@@ -15,7 +15,7 @@
 	<description>AMS CodeList</description>
 	<properties>
 		<java.version>17</java.version>
-		<project.artifacts.dir>E:/AMS_NEW/artifacts</project.artifacts.dir>
+		<project.artifacts.dir>C:/AMS_NEW/artifacts</project.artifacts.dir>
 	</properties>
 	<dependencies>
 		<dependency>
