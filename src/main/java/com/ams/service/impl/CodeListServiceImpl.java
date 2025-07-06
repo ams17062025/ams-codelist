@@ -120,6 +120,8 @@ public class CodeListServiceImpl implements CodeListService {
         return response;
     }
 
+    @Override
+    @LogExecutionTime
     public CodeListResponse delete(@NonNull Long recordId) {
         CodeListResponse response = new CodeListResponse();
         Optional<CodeList> codeList = repo.findById(recordId);
@@ -255,15 +257,15 @@ public class CodeListServiceImpl implements CodeListService {
         Optional<CodeList> codeListObj = repo.findById(request.getCodeListBean().getRecordId());
         if(codeListObj.isPresent()) {
             CodeList codeList = codeListObj.get();
-            List<String> deleteCode = new ArrayList<>();
+            List<Long> deleteCode = new ArrayList<>();
             if(Objects.nonNull(request.getCodeListBean())
                     && !CollectionUtils.isEmpty(request.getCodeListBean().getCodeListCodeBeans())) {
                 request.getCodeListBean().getCodeListCodeBeans().forEach(e -> {
-                    deleteCode.add(e.getCode().trim());
+                    deleteCode.add(e.getRecordId());
                 });
             }
             List<CodeListCode> deleteChilds = codeList.getCodeListCode()
-                    .stream().filter(e-> deleteCode.contains(e.getCode())).toList();
+                    .stream().filter(e-> deleteCode.contains(e.getRecordId())).toList();
             try {
                 codeList.getCodeListCode().removeAll(deleteChilds);
                 repo.save(codeList);
@@ -271,60 +273,6 @@ public class CodeListServiceImpl implements CodeListService {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        return response;
-    }
-
-    //@Override
-    public CodeListResponse addCode(CodeListRequest request) {
-        CodeListResponse response = new CodeListResponse();
-        Optional<CodeList> codeList = repo.findById(request.getCodeListBean().getRecordId());
-        if(codeList.isPresent()) {
-            CodeList updateObject = codeList.get();
-            if(CollectionUtils.isEmpty(request.getCodeListBean().getCodeListCodeBeans())) {
-                request.getCodeListBean().getCodeListCodeBeans().forEach(codeListCodeBean -> {
-                    CodeListCode code = new CodeListCode();
-                    code.setCode(codeListCodeBean.getCode());
-                    code.setCodeValue(codeListCodeBean.getCodeValue());
-                    code.setCodeDescription(codeListCodeBean.getCodeDescription());
-                    code.setCodeList(updateObject);
-                    updateObject.getCodeListCode().add(code);
-                });
-            }
-            repo.save(updateObject);
-            response.setStatus("SUCCESS");
-        } else {
-            response.setStatus("FAILED");
-            Error error = new Error("AMS-CL-1004", "Code list not found for add code.");
-            response.setError(error);
-            return response;
-        }
-        return response;
-    }
-
-    //@Override
-    public CodeListResponse removeCode(CodeListRequest request) {
-        CodeListResponse response = new CodeListResponse();
-        Optional<CodeList> codeList = repo.findById(request.getCodeListBean().getRecordId());
-        if(codeList.isPresent()) {
-            CodeList updateObject = codeList.get();
-            if(CollectionUtils.isEmpty(request.getCodeListBean().getCodeListCodeBeans())) {
-                List<Long> list = request.getCodeListBean().getCodeListCodeBeans().stream().map(CodeListCodeBean::getRecordId).toList();
-                List<CodeListCode> removeList = new ArrayList<>();
-                updateObject.getCodeListCode().forEach(codeListCode -> list.forEach(rec -> {
-                    if(codeListCode.getRecordId().equals(rec)) {
-                        removeList.add(codeListCode);
-                    }
-                }));
-                updateObject.getCodeListCode().removeAll(removeList);
-                repo.save(updateObject);
-            }
-            response.setStatus("SUCCESS");
-        } else {
-            response.setStatus("FAILED");
-            Error error = new Error("AMS-CL-1004", "Code list not found for add code.");
-            response.setError(error);
-            return response;
         }
         return response;
     }

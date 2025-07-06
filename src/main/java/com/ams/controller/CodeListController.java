@@ -52,7 +52,7 @@ public class CodeListController {
         return service.addCodeListCode(request);
     }
 
-    @PostMapping("/code/delete")
+    @DeleteMapping("/code/delete")
     private CodeListResponse deleteCodeListCode(@RequestBody CodeListRequest request) {
         return service.deleteCodeListCode(request);
     }
